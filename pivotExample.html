@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pivot Example by jrbAnalytics</title>
+	<script src="external/jquery.js"></script>
+	<script src="external/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+	<link href="external/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet">
+	<script src="external/multisortable.js"></script>
+	<script src="external/math.c.js"></script>
+	
+	<script src="jrbAnalytics.js"></script>	
+	<script src="jrbWidgets.js"></script>
+	<script src="jrbPivot.js"></script>
+
+	<style>
+	
+	body {
+		font-family: Arial,Helvetica,sans-serif;
+	}
+	h1 {
+		margin: 10px 0;
+	}
+	h2 {
+		margin: 8px 0;
+	}
+	
+	table.simpleTable td,
+	table.simpleTable th
+	{
+		border: 1px solid #eee;
+		padding: 2px;
+	}
+
+	div#sourceTable,
+	div#pivotout,
+	.poutput .simpleTable,
+	div#designer {
+		font-size: 0.9em;
+		box-shadow: 0 0 11px #888;
+		padding: 5px;
+		margin: 10px 0 0;
+	}
+	
+	.pparams,
+	pre#pivotparams,
+	pre#params {
+		font-size: 0.9em;
+		box-shadow: 0 0 11px #888;
+		padding: 5px;
+		color: #040;
+		margin: 10px 10px 0 0;
+	}
+
+	div#e0,
+	div#e1,
+	div#e3,
+	div#e2 {
+		padding: 5px;
+	}	
+
+	#e3 td {
+		border-top: 1px solid #aaa;
+	}
+
+	#e3 td.poutput {
+		vertical-align: top;
+	}
+
+	td.objname {
+		font-weight: bold;
+		text-align: right;
+	}
+
+	.objref td {
+		border-top: 1px solid #ccc;
+		padding: 5px 2px;
+		vertical-align: top;
+	}
+
+	
+	</style>
+
+<script>
+
+$(document).ready(main);
+
+function main() {
+
+	var jA = jrbAnalytics,
+		myTable = [
+			{Customer: 'John B', Product: 'paper', 'Quantity Purchased': 3, 'Price per Item': 2.95, 'Shipping Address': 'California' },
+			{Customer: 'John B', Product: 'ink', 'Quantity Purchased': 2, 'Price per Item': 12.95, 'Shipping Address': 'California' },
+			{Customer: 'John B', Product: 'staples', 'Quantity Purchased': 1, 'Price per Item': 5.95, 'Shipping Address': 'California' },
+			{Customer: 'John B', Product: 'pen', 'Quantity Purchased': 5, 'Price per Item': 1.95, 'Shipping Address': 'California' },
+			{Customer: 'John B', Product: 'pencil', 'Quantity Purchased': 5, 'Price per Item': 0.95, 'Shipping Address': 'California' },
+			{Customer: 'John B', Product: 'notepad', 'Quantity Purchased': 2, 'Price per Item': 4.55, 'Shipping Address': 'California' },
+
+			{Customer: 'Jane D', Product: 'paper', 'Quantity Purchased': 4, 'Price per Item': 2.95, 'Shipping Address': 'Oregon' },
+			{Customer: 'Jane D', Product: 'ink', 'Quantity Purchased': 12, 'Price per Item': 12.95, 'Shipping Address': 'Oregon' },
+			{Customer: 'Jane D', Product: 'staples', 'Quantity Purchased': 12, 'Price per Item': 5.95, 'Shipping Address': 'Oregon' },
+			{Customer: 'Jane D', Product: 'pen', 'Quantity Purchased': 54, 'Price per Item': 1.95, 'Shipping Address': 'Oregon' },
+			{Customer: 'Jane D', Product: 'pencil', 'Quantity Purchased': 35, 'Price per Item': 0.95, 'Shipping Address': 'Oregon' },
+			{Customer: 'Jane D', Product: 'notepad', 'Quantity Purchased': 21, 'Price per Item': 4.55, 'Shipping Address': 'Oregon' },
+
+			{Customer: 'James D', Product: 'paper', 'Quantity Purchased': 323, 'Price per Item': 2.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'James D', Product: 'ink', 'Quantity Purchased': 156, 'Price per Item': 12.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'James D', Product: 'staples', 'Quantity Purchased': 232, 'Price per Item': 5.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'James D', Product: 'pen', 'Quantity Purchased': 712, 'Price per Item': 1.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'James D', Product: 'pencil', 'Quantity Purchased': 311, 'Price per Item': 0.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'James D', Product: 'notepad', 'Quantity Purchased': 412, 'Price per Item': 4.55, 'Shipping Address': 'Arizona' },
+
+
+			{Customer: 'Mary A', Product: 'paper', 'Quantity Purchased': 32, 'Price per Item': 2.95, 'Shipping Address': 'California' },
+			{Customer: 'Mary A', Product: 'pencil', 'Quantity Purchased': null, 'Price per Item': undefined, 'Shipping Address': 'California' },
+			{Customer: 'Mary A', Product: 'pen', 'Quantity Purchased': '', 'Price per Item': '', 'Shipping Address': 'California' },
+			{Customer: 'Mary A', Product: 'ink', 'Quantity Purchased': 15, 'Price per Item': 12.95, 'Shipping Address': 'California' },
+			{Customer: 'Mark B', Product: 'staples', 'Quantity Purchased': 23, 'Price per Item': 5.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'Mark B', Product: 'pen', 'Quantity Purchased': 72, 'Price per Item': 1.95, 'Shipping Address': 'Arizona' },
+			{Customer: 'Judy C', Product: 'pencil', 'Quantity Purchased': 11, 'Price per Item': 0.95, 'Shipping Address': 'Nevada' },
+			{Customer: 'Judy C', Product: 'notepad', 'Quantity Purchased': 12, 'Price per Item': 4.55, 'Shipping Address': 'Nevada' },
+		
+		],
+		myDataObject = jA.getGlobal('utils.objectifyTable')(myTable),
+		fixedParams = {
+			"pivotconfig": {
+				"dataNames": [
+					"Quantity Purchased",
+					"Price per Item"
+				],
+				"columnNames": [
+					"Shipping Address"
+				],
+				"rowNames": [
+					"Customer",
+					"Product"
+				],
+				"pivotFn": "Sum",
+				"dataMarkerPosition": 1,
+				"pivotEmpty": "",
+				"cleandata": true,
+				"options": {
+					"__colTotals": {
+						"summary": {
+							"rightOrbottom": [
+								"Summary"
+							]
+						}
+					},
+					"Quantity Purchased": {
+						"summarytype": {
+							"summarytype": [
+								"Sum",
+								"Count"
+							]
+						}
+					},
+					"__rowTotals": {
+						"summary": {
+							"rightOrbottom": [
+								"Sum"
+							],
+							"topOrleft": [
+								"Count"
+							]
+						}
+					},
+					"Customer": {
+						"summary": {
+							"rightOrbottom": [
+								"Sum"
+							],
+							"topOrleft": [
+								"Count"
+							]
+						},
+						"filter": {
+							"in": [
+								"John B",
+								"Jane D",
+								"James D",
+								"Mary A",
+								"Mark B",
+								"Judy C"
+							]
+						}
+					}
+				}
+			}
+		},	
+		ex1Params = {
+			"pivotconfig": {
+				"dataNames": [
+					"Quantity Purchased"
+				],
+				"columnNames": [],
+				"rowNames": [
+					"Customer"
+				],
+				"pivotFn": "Sum",
+				"pivotEmpty": "0",
+				"cleandata": true
+			}
+		},
+		ex2Params = {
+			"pivotconfig": {
+				"dataNames": [
+					"Quantity Purchased"
+				],
+				"columnNames": [],
+				"rowNames": [
+					"Shipping Address"
+				],
+				"pivotFn": "None",
+				"pivotEmpty": "0",
+				"cleandata": true,
+				"options": {
+					"Quantity Purchased": {
+						"summarytype": {
+							"summarytype": [
+								"Count",
+								"Sum"
+							]
+						}
+					},
+					"__rowTotals": {
+						"summary": {
+							"rightOrbottom": [
+								"Summary"
+							]
+						}
+					}
+				}
+			}
+		},
+		ex3Params = {
+			"pivotconfig": {
+				"dataNames": [
+					"Quantity Purchased"
+				],
+				"columnNames": [],
+				"rowNames": [
+					"Shipping Address"
+				],
+				"pivotFn": "None",
+				"pivotEmpty": "0",
+				"cleandata": true,
+				"options": {
+					"Quantity Purchased": {
+						"summarytype": {
+							"summarytype": [
+								"Min",
+								"Count",
+								"Sum",
+								"Max"
+							]
+						}
+					},
+					"Shipping Address": {
+						"sort": {
+							"sort": [
+								"Descending - Quantity Purchased (Sum)"
+							]
+						}
+					}
+				}
+			}
+		},
+		fixedOutput, 
+		myParams = {};
+	
+	//jqueryUI tabs setup
+	$('#tabs').tabs();
+	
+	//Show input table
+	jA.getGlobal('utils.renderSimpleTable')('sourceTable', myDataObject);
+	$('#sourceTable table.simpleTable th').each(function(idx, el) { 
+		$(el).attr('data-priority', idx); 
+	});	
+
+//---------------
+	//Simple Examples
+	fixedOutput = jA.getGlobal('model.pivot')(myDataObject, ex1Params);
+	$('#ex1 .pparams').text(JSON.stringify(ex1Params, null, 4));
+	jA.getGlobal('utils.renderSimpleTable')('ex1 .poutput', fixedOutput);
+
+	fixedOutput = jA.getGlobal('model.pivot')(myDataObject, ex2Params);
+	$('#ex2 .pparams').text(JSON.stringify(ex2Params, null, 4));
+	jA.getGlobal('utils.renderSimpleTable')('ex2 .poutput', fixedOutput);
+
+	fixedOutput = jA.getGlobal('model.pivot')(myDataObject, ex3Params);
+	$('#ex3 .pparams').text(JSON.stringify(ex2Params, null, 4));
+	jA.getGlobal('utils.renderSimpleTable')('ex3 .poutput', fixedOutput);
+	
+	//Direct Method
+	fixedOutput = jA.getGlobal('model.pivot')(myDataObject, fixedParams);
+	$('#pivotparams').text(JSON.stringify(fixedParams, null, 4));
+	jA.getGlobal('utils.renderSimpleTable')('pivotout', fixedOutput);
+	
+	//Designer Method 
+	jA.getGlobal('model.pivot')(myDataObject, myParams, 'designer');
+	
+	//uiRefreshEvent = new Event('refreshedUI'),
+	document.addEventListener('refreshedUI', function (e) { 
+		$('#params').text(JSON.stringify({pivotconfig: myParams.draftpivotconfig}, null, 4));}, 
+	false);
+	
+	//Example on how to extract 'where used' data from specific cells.
+	$('#designer #pivotres').click(function(e) {
+		if (e.target.nodeName == 'TD') {
+			var pivotObject = myParams.draftOutput,
+				$target = $(e.target),
+				columnNumber = $target.index(),  //i.e. TD position amongst siblings in TR row
+				dataRowNumber = $target.closest('tr').index(), //i.e. TR position amongst siblings in table. 
+				arr, 
+				table;
+
+			arr = pivotObject.pivotWhereFrom.getRows(columnNumber, dataRowNumber, false)||'';  //flip to true if dataRowNumber excludes row headers. e.g count in tbody used
+			table = pivotObject.pivotWhereFrom.getTable(columnNumber, dataRowNumber, false)||'';  //flip to true if dataRowNumber excludes row headers.
+			if (arr || table) alert ("Data contents from these rows\nRows: "+JSON.stringify(arr)+"\n"+JSON.stringify(table));
+		
+		}
+	});
+
+}
+
+</script>
+
+</head>
+<body>
+<h1>Data Pivot examples by jrbAnalytics</h1>
+
+<div id="tabs">
+	<ul>
+	<li><a href="#e0">Source Table</a></li>
+	<li><a href="#e3">Simple Examples</a></li>
+	<li><a href="#e1">Larger Example</a></li>
+	<li><a href="#e2">Designer</a></li>
+	<li><a href="#e4">Reference</a></li>
+	</ul>
+
+	<div id="e0">
+		<h2>Source Data</h2>
+		<div id="sourceTable"></div>
+	</div>
+	
+	<div id="e1">
+		<h2>Larger Example</h2>
+		<table style="table-layout: fixed; width: 100%;"><tr><td  style="vertical-align:top; width: 20vw;"><b>Pivot Parameters</b><br><pre id="pivotparams"></pre></td><td style="vertical-align:top;"><b>Pivot Output</b><br><div id="pivotout"></div></td></tr></table>
+	</div>
+
+	<div id="e3">
+		<h2>Some simple examples</h2>
+		<table style="table-layout: fixed; width: 100%;">
+		<tr><th style="width: 20vw;"><b>Pivot Parameters</b></td><th ><b>Pivot Output</b></td></tr>
+		<tr id="ex1"><td ><pre class="pparams"></pre></td><td class="poutput"></td></tr>
+		<tr id="ex2"><td ><pre class="pparams"></pre></td><td class="poutput"></td></tr>
+		<tr id="ex3"><td ><pre class="pparams"></pre></td><td class="poutput"></td></tr>
+		</table>
+	</div>
+
+
+	<div id="e2">
+		Use the designer on the right to create the pivot. Additional options for sort and sub-totals show after dragging column names to the drop zones. Click the 'Show used parameters' button to show the object JSON that was used to create the pivot. <br>
+		<table><tr>
+			<td style="vertical-align:top; width: 20vw;">
+				<pre id="params"></pre>
+			</td>
+			<td style="vertical-align:top;">
+				<div id="designer"></div>
+			</td>
+		</tr></table>
+	</div>
+	
+	<div id="e4">
+	<h2>Reference</h2>
+	<h3>Installation</h3>
+	
+	Nothing special provided. See the header of this file for dependencies and download as needed. Note that jquery-ui, multisortable, and jrbWidgets are used by the designer.
+	
+	<h3>Use</h3>
+	
+	<pre>
+	
+	myOutputPivoted = jrbAnalytics.getGlobal('model.pivot')(myInputData, myParams);
+	
+	</pre>
+	where <b>myInputData</b> and <b>myOutputPivoted</b> are jrbAnalytics data objects, and <b>myParams</b> is the configuration JSON (see below). Note that myParams IS MODIFIED with a '__ErrorMessages' object that displays in clear text configuration errors identified. Non-matching field or function names for example.
+	<br><br>
+	Helper functions:
+	<pre>
+
+	myInputData = jrbAnalytics.getGlobal('utils.objectifyTable')(myTable);
+
+	</pre>
+	where <b>myTable</b> is a normal table object with a [{fieldName1:value1, fieldName2:value2, ..., {..}, ...] format;
+
+	<pre>
+
+	jrbAnalytics.getGlobal('utils.renderSimpleTable')('someDIVid', myInputData);
+
+	</pre>
+	renders an HTML table of a jrbAnalytics data object.
+
+	<br><br>
+	To use with the designer:
+	<pre>
+	
+	myParams = {}; //or preset with a configuration
+	jrbAnalytics.getGlobal('model.pivot')(myInputData, myParams, divIDtoLoadDesigner);
+	
+	</pre>
+	With the designer, at any time 'myParams.draftpivotconfig' contains the draft configuration.  
+	
+	
+	<h3>Creating the configuration JSON</h3>
+	<b>Option 1: Use the Designer</b><br>
+	Use of the designer is recommended as the quickest way to construct the JSON object correctly and to obtain the view you want. Use the full <a href="jrbAnalytics.html">jrbAnalytics</a> example to upload your own data. Or copy this and all dependent files to a local directory. Change the 'myTable' variable to use your data set. The examples tabs will stop working, but the designer will not. Then click on the 'Show used Parameters' to see the JSON paramters used, which can be cut and pasted.<br><br>
+	<b>Option 2: Construct by hand</b><br>
+	
+	Pass a JSON Object in this format: 
+	<pre>
+{
+    pivotconfig: pivotConfigObject
+}
+	</pre> where <b>pivotConfigObject</b> is a JSON object that contains items as follows. <br>
+<table class="objref">
+<tr><td class="objname">dataNames</td><td style="width:250px;">['field name 1', 'field name 2']  </td><td>Optional but usually needed. Array of column names that contain the data being pivoted. Usually numeric, but not always. Order of names used to determines order of output columns.</td></tr>
+<tr><td class="objname">columnNames</td><td>['field name 1', 'field name 2']  </td><td>Optional. Array of column names to use to populate the column headers. Usually text, but not always. Order determines hierarchy, or how data is nested.</td></tr>
+<tr><td class="objname">rowNames</td><td>['field name 1', 'field name 2']  </td><td>Optional. Array of column names to use to populate the row headers. Usually text, but not always. Order determines hierarchy, or how data is nested.</td></tr>
+<tr><td class="objname">pivotFn</td><td>string of function name </td><td>Optional. Examples are 'Sum' or 'Count', 'List', 'Unique List', 'Max', 'Min', 'Mean', 'mode', 'Median', 'Product', Variance', 'StdDev' also available. 'None', invalid values or not providing this parameter result in the same none operation on the pivoted data array. You can add your own functions with the following simple extension. See start of jrbPivot.js for existing examples: <pre>
+ jA.extendGlobalObject('model.pivotfunctions', { 
+	SumPlusOne: function(arrin) { return math.sum(arrin) + 1; }, //note math.js function here
+	CountMinusOne: function(arrin) { return arrin.length - 1; }, //note math.js function here
+	myFunctionName: function(arrin) { --insert calculation then -- return result; }, //modify as needed
+});
+</pre></td></tr>
+<tr><td class="objname">pivotEmpty</td><td>any value</td><td>Optional. What to use for pivoted cells that contain no data. If not set, 'undefined' will be used. A 0 or '' may be more useful.</td></tr>
+<tr><td class="objname">cleandata</td><td>boolean, true or false</td><td>Optional but highly recommended.Interpreted as false if missing. When set, the pivot function excludes null, undefined or empty strings ('') in the input data from being pivoted. So for example this pivoted data [1, 4, '', '', 3] contains 5 items and fails to sum without cleadata set, whereas when set the data reduces to [1, 4, 3] contains 3 items and will sum. </td></tr>
+<tr><td class="objname">options</td><td>options object</td><td>See below. Optional but needed for more useful pivoting actions. This object defines more specific filter, sort, data collation functions, and row and column summary and sub-summary functions (e.g. 'Sum' for totals and sub-totals).</td></tr>
+</table>
+
+<br>
+<b>options object</b>
+<br>
+	a JSON Object in this format: 
+	<pre>
+{
+    'field name': {
+		'action': {
+			'sub-action': subActionValue,
+			//..additional sub actions
+		}, 
+		//..additional actions
+	},
+	//additional field names
+}
+	</pre> where 
+	<ul>
+	<li><b>'field name'</b> is one of the field (or column) names of the input data, OR one of '__rowTotals', '__colTotals' that are used to add overall summary rows or columns (grand totals for example).</li>
+	<li><b>'action'</b> is one of the following: 'filter', 'msort', 'sort', 'summary', 'summarytype'. Not every action is relevant to every 'field name' as follows: 
+		<ul>
+			<li>'filter' applies to anything except '__rowTotals' and '__colTotals'.</li>
+			<li>'msort', 'sort', 'summary'  applies to all row and column field names. I.e. 'field name' must appear in rowNames or columnNames above.</li>
+			<li>Additionally 'summary' applies to '__rowTotals', '__colTotals'. These are the only actions permitted for these 'field names'.</li>
+			<li>'summarytype' applies to data field names only. I.e. 'field name' must appear in dataNames above.</li>	
+		</ul>
+	</li>
+	<li><b>'sub-action'</b> is one of the following: 'in', 'sort', 'msort', 'topOrleft', 'rightOrbottom'. 'sub-action' is related to 'action' as follows: 
+		<ul>
+			<li>'in' - use with 'filter' action only. 'subActionValue' is an array of values to be included in the pivot. </li>
+			<li>'msort' - use with 'msort' action only. 'subActionValue' is an array of field values to set sort order. Over-ridden if sort is set.</li>
+			<li>'sort' - use with 'sort' action only. 'subActionValue' is an array with one string that defines the sort action. See below.</li>
+			<li>'topOrleft', 'rightOrbottom' - use with 'summary'. 'subActionValue' is an array of pivot function names (same used used in pivotFn above) with 'Summary' an additional value that is also permitted. This defines the functions and the order to use to create row or column summary lines (e.g. 'Sum' for a sub-total). Using 'Summary' as a function name means that the function used will be the same as that used by the data field names (and is recommended else results can get confusing). If not obvious 'topOrleft' means summary rows displayed above or summary columns displayed to the left the respective data set. 'rightOrbottom' means summary rows displayed below or summary columns displayed to the right the respective data set.
+			<li>'summarytype' - use with 'summarytype' action only. 'subActionValue' is an array of pivot function names (same used used in pivotFn above) to use on the collated data in each cell in the order specified in the array. Overrides the 'pivotFn' default.</li>	
+		</ul>
+	</li>
+	</ul>
+	<br>
+	<i>Note in the output of the pivot designer, you'll also see a 'summary_sort' or 'summarytype_sort' 'action'. You can ignore these. Used by the designer UI only to remember sort actions.</i>
+	<br><br>
+	<b>Sort Strings</b>
+	for the 'sort' action and subaction, a string is parsed to determine how data rows or columns should be sorted. The string is the same as that used in the sort dropdowns in the designer and has the following format: 
+	<pre>
+	[order] + ' - ' + [Column name] + [' ('+function+')']
+	</pre>
+	[order] is simply one of 'Descending' or 'Ascending'. The column name must be that of a data column name OR be the same as 'field name' under which the 'sort' action is placed. The function in brackets is only used with data column names and must match one of the functions being used.
+	
+	</div>
+</div>
+</body>
+</html>
